@@ -100,6 +100,12 @@ struct XR25frame {
 
 class XR25frameparser {
 public:
+	/** Parses a frame and return a 'struct XR25frame'.
+	 * @param c Translated frame (&quot;0xff 0xff&quot; converted to 0xff)
+	 * @param length Length in octets
+	 * @param fra Reference to 'struct XR25frame'; implementors write here
+	 * @return true if the frame @a c was parsed
+	 */
 	virtual bool parse_frame(const unsigned char c[], int length,
 		XR25frame &fra) = 0;
 };
@@ -108,7 +114,8 @@ public:
 	
 class XR25streamreader {
 private:
-	typedef void (*post_parse_t)(const unsigned char[], int, XR25frame &);
+	typedef std::function<void(const unsigned char[], int, XR25frame &)
+			      > post_parse_t;
 
 	std::istream     &__in;
 	std::atomic_bool __synchronized;
