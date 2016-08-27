@@ -18,7 +18,9 @@
 
 #include <mutex>
 #include <gtkmm.h>
+#include <pangomm/context.h>
 #include "XR25streamreader.hh"
+#include "CairoGauge.hh"
 
 class UI {
 private:
@@ -95,6 +97,19 @@ private:
 	Gtk::Entry    *__entry[E_COUNT];
 	Gtk::Arrow    *__flag[F_COUNT];
 
+	enum { G_RPM = 0, G_SPD_KM_H, G_TEMP_WATER, G_BATT_V, G_COUNT };
+	CairoGauge     __gauge[G_COUNT] = {
+		{ "RPM", [](void *p) { return static_cast<XR25frame*>(p)->rpm; }
+		  , 7000, 1000 },
+		{ "km/h", [](void *p) { return static_cast<XR25frame*>(p)
+					->spd_km_h; }, 240, 20 },
+		{ "Temp (C)", [](void *p) { return static_cast<XR25frame*>(p)
+					    ->temp_water; }, 120, 30 },
+		{ "Battery (V)", [](void *p) { return static_cast<XR25frame*>(p)
+					       ->batt_v; }, 18, 2 }
+	};
+	Glib::RefPtr<Gtk::TextBuffer>    __dash_tb;
+
 	void update_page_diagnostic(XR25frame &);
 	void update_page_dashboard(XR25frame &);
 
@@ -141,7 +156,7 @@ public:
 		__builder->get_widget("mw_hb_fra_s",    __hb_fra_s);
 		__builder->get_widget("mw_hb_is_sync",  __hb_is_sync);
 		__builder->get_widget("mw_notebook",    __notebook);
-
+		
 		for (int i = 0; i < E_COUNT; i++)
 			__builder->get_widget("mw_e" + std::to_string(i),
 					      __entry[i]);
@@ -154,13 +169,25 @@ public:
 #define UI_UPDATE_PAGE_HZ   16
 #define UI_UPDATE_HEADER_HZ 1
 	void run() {
+		Gtk::Grid *dash_grid = nullptr;
+		__builder->get_widget("mw_dash_grid", dash_grid);
+		dash_grid->attach(__gauge[G_RPM],        0, 0, 1, 1);
+		dash_grid->attach(__gauge[G_SPD_KM_H],   2, 0, 1, 1);
+		dash_grid->attach(__gauge[G_TEMP_WATER], 0, 1, 1, 1);
+		dash_grid->attach(__gauge[G_BATT_V],     2, 1, 1, 1);
+		dash_grid->show_all();
+
+		Gtk::TextView *dash_text = nullptr;
+		__builder->get_widget("mw_dash_text", dash_text);
+		dash_text->set_buffer((__dash_tb = Gtk::TextBuffer::create()));
+
+		/* connect signals */
 		Glib::signal_timeout().connect(sigc::mem_fun(*this,
 							     &UI::update_page)
 					       , 1000 / UI_UPDATE_PAGE_HZ);
 		Glib::signal_timeout().connect(sigc::mem_fun(*this,
 							     &UI::update_header)
 					       , 1000 / UI_UPDATE_HEADER_HZ);
-		
 		Gtk::Button *about_button = nullptr;
 		__builder->get_widget("mw_about_button", about_button);
 		about_button->signal_clicked().connect([this]() {
@@ -170,6 +197,23 @@ public:
 					ad->set_version(XR25DIAG_VERSION);
 					ad->run(), ad->hide();
 				});
+		Gtk::CheckButton *hud = nullptr;
+		__builder->get_widget("mw_hud", hud);
+		hud->signal_toggled().connect([hud,dash_text,this]() {
+				auto m = hud->get_active()
+					? Cairo::Matrix{ -1, 0, 0, -1, 0, 0 }
+					: Cairo::identity_matrix();
+				for (auto &i : __gauge)
+					i.set_transform_matrix(m);
+				dash_text->get_pango_context()
+					->set_matrix(hud->get_active()
+						     ? Pango::Matrix{ -1,  0,
+								       0, -1,
+								       0,  0 }
+						     : Pango::Matrix{ 1, 0,
+								      0, 1,
+								      0, 0 });
+			});
 		
 		Gtk::Window *main_window  = nullptr;
 		__builder->get_widget("main_window",     main_window);

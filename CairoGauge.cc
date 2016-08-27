@@ -24,6 +24,7 @@ bool CairoGauge::on_draw(const Cairo::RefPtr<Cairo::Context> &cc) {
 	// setup
 	cc->set_antialias(Cairo::ANTIALIAS_SUBPIXEL);
 	cc->translate(width / 2, height / 2);
+	cc->transform(__transform_matrix);
 	cc->set_line_cap(Cairo::LINE_CAP_ROUND);
 	cc->set_line_width(2);
 	cc->set_font_size(CAIROGAUGE_FONT_SIZE);
