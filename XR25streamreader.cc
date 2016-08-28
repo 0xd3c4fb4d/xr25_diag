@@ -67,7 +67,8 @@ void XR25streamreader::read_frames(XR25frameparser &parser) {
 		}
 
 		if (__synchronized)
-			(p - frame) < ARRAY_SIZE(frame) ? *p++ = c
+			static_cast<unsigned>(p - frame) < ARRAY_SIZE(frame)
+				      ? *p++ = c
 				      : __synchronized = 0, __sync_err_count++;
 	}
 	pthread_cleanup_pop(1);

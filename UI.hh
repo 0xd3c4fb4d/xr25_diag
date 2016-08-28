@@ -151,7 +151,7 @@ public:
 				       this->__last_recv_mutex.lock();
 				       this->__last_recv = fra; // copy struct
 				       this->__last_recv_mutex.unlock();
-			       }),  __fp(_p) {
+			       }),  __fp(_p), __last_recv() {
 		__builder->get_widget("mw_hb_sync_err", __hb_sync_err);
 		__builder->get_widget("mw_hb_fra_s",    __hb_fra_s);
 		__builder->get_widget("mw_hb_is_sync",  __hb_is_sync);
@@ -164,7 +164,7 @@ public:
 			__builder->get_widget("mw_f" + std::to_string(i),
 					      __flag[i]);
 	}
-	~UI() { __xr25reader.stop(); }
+	~UI() { }
 	
 #define UI_UPDATE_PAGE_HZ   16
 #define UI_UPDATE_HEADER_HZ 1
@@ -201,19 +201,21 @@ public:
 		__builder->get_widget("mw_hud", hud);
 		hud->signal_toggled().connect([hud,dash_text,this]() {
 				auto m = hud->get_active()
-					? Cairo::Matrix{ -1, 0, 0, -1, 0, 0 }
+					? Cairo::Matrix{ 1, 0, 0, -1, 0, 0 }
 					: Cairo::identity_matrix();
 				for (auto &i : __gauge)
 					i.set_transform_matrix(m);
 				dash_text->get_pango_context()
 					->set_matrix(hud->get_active()
-						     ? Pango::Matrix{ -1,  0,
-								       0, -1,
-								       0,  0 }
+						     ? Pango::Matrix{ 1,  0,
+								      0, -1,
+								      0,  0 }
 						     : Pango::Matrix{ 1, 0,
 								      0, 1,
 								      0, 0 });
 			});
+		
+		__xr25reader.start(const_cast<XR25frameparser &>(__fp));
 		
 		Gtk::Window *main_window  = nullptr;
 		__builder->get_widget("main_window",     main_window);

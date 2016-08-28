@@ -63,14 +63,15 @@ bool get_port_conf(Glib::RefPtr<Gtk::Builder> b, Glib::ustring &path) {
 void ttyS_init(int fd) {
 	struct termios2 t_io = { 0, 0, CREAD | BOTHER | CS8,
 				 0, 0, { }, 62500, 62500 };
+	t_io.c_cc[VMIN] = 1;
 	ioctl(fd, TCSETS2, &t_io);
 	// O_NDELAY open() flag disables blocking mode for I/O; reenable
-	fcntl(fd, F_SETFL, fcntl(fd, F_GETFL)
-	      & ~O_NONBLOCK);
+	fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) & ~O_NONBLOCK);
 }
 
 int main(int argc, char *argv[]) {
-	auto application = Gtk::Application::create(argc, argv, argv[0]);
+	auto application = Gtk::Application::create(argc, argv,
+						    "com.github.xr25_diag");
 	Glib::RefPtr<Gtk::Builder> builder = Gtk::Builder::create_from_file
 		("xr25_diag.glade");
 	Glib::ustring path;
@@ -81,9 +82,10 @@ int main(int argc, char *argv[]) {
 	int fd = open(path.c_str(), O_RDWR | O_NOCTTY
 		      | O_NDELAY /* don't wait DCD signal */);
 	if (fd == -1) {
+		const char *err_str = g_strerror(errno);
 		Gtk::MessageDialog e("open() failed", /* use_markup */ 0,
 				     Gtk::MESSAGE_ERROR);
-		e.set_secondary_text(strerror(errno)), e.run();
+		e.set_secondary_text(err_str), e.run();
 		return EXIT_FAILURE;
 	}
 	ttyS_init(fd);
