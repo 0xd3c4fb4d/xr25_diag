@@ -27,19 +27,31 @@
 #include <errno.h>
 #include "XR25streamreader.hh"
 #include "Fenix3parser.hh"
+#include "ParserFactory.hh"
 #include "UI.hh"
+
+struct ParamsStruct {
+	Glib::ustring dev_path;    /* tty device path */
+	Glib::ustring parser_t;    /* parser class typename */
+	Glib::ustring tty_conf;    /* serial port configuration; string format:
+				    * <baud>,<character size><parity><stop bits>
+				    * e.g., 62500,8N1 */
+};
 
 /** Get port configuration from user.
  * @param b Gtk::Builder object to use; 'conf_dialog' is a GtkDialog req-
  *     uesting configuration from user
- * @param path Returned &quot;/dev/ttyX&quot; path
+ * @param params Returned parameters struct
  */
-bool get_port_conf(Glib::RefPtr<Gtk::Builder> b, Glib::ustring &path) {
+bool get_port_conf(Glib::RefPtr<Gtk::Builder> b, ParamsStruct &params) {
 #define DEV_PATH "/dev/"
 	Gtk::Dialog *conf_dialog;
-	Gtk::ComboBoxText *dev_path;
+	Gtk::ComboBoxText *dev_path, *parser_t;
+	Gtk::Entry        *tty_conf;
 	b->get_widget("conf_dialog", conf_dialog);
 	b->get_widget("cd_dev_path", dev_path);
+	b->get_widget("cd_parser_t", parser_t);
+	b->get_widget("cd_tty_conf", tty_conf);
 	
 	DIR *dirp = opendir(DEV_PATH);
 	struct dirent *dirent;
@@ -51,16 +63,25 @@ bool get_port_conf(Glib::RefPtr<Gtk::Builder> b, Glib::ustring &path) {
 	}
 	dev_path->set_active(0);
 
+	for (auto &i : ParserFactory::get_registered_types())
+		parser_t->append(i.first);
+	parser_t->set_active(0);
+
 	int ret = conf_dialog->run();
 	conf_dialog->hide();
-	return (path = dev_path->get_active_text()),
-		ret == Gtk::RESPONSE_OK;
+
+	return ({ params.dev_path = dev_path->get_active_text();
+		params.parser_t = parser_t->get_active_text();
+		params.tty_conf = tty_conf->get_text(); })
+		, ret == Gtk::RESPONSE_OK;
 }
 
-/** Serial port setup. 62500,8N1
+/** Serial port setup.
  * @param fd File descriptor
+ * @param conf Serial port configuration; ignored, defaults to &quot;
+ *     62500,8N1&quot;
  */
-void ttyS_init(int fd) {
+void ttyS_init(int fd, Glib::ustring conf) {
 	struct termios2 t_io = { 0, 0, CREAD | BOTHER | CS8,
 				 0, 0, { }, 62500, 62500 };
 	t_io.c_cc[VMIN] = 1;
@@ -74,26 +95,27 @@ int main(int argc, char *argv[]) {
 						    "com.github.xr25_diag");
 	Glib::RefPtr<Gtk::Builder> builder = Gtk::Builder::create_from_file
 		("xr25_diag.glade");
-	Glib::ustring path;
+	ParamsStruct params;
 
-	if (!get_port_conf(builder, path))
+	if (!get_port_conf(builder, params))
 		return EXIT_SUCCESS;
 
-	int fd = open(path.c_str(), O_RDWR | O_NOCTTY
+	int fd = open(params.dev_path.c_str(), O_RDWR | O_NOCTTY
 		      | O_NDELAY /* don't wait DCD signal */);
 	if (fd == -1) {
 		const char *err_str = g_strerror(errno);
-		Gtk::MessageDialog e("open() failed", /* use_markup */ 0,
-				     Gtk::MESSAGE_ERROR);
+		Gtk::MessageDialog e("open() " + params.dev_path + " failed",
+				     /* use_markup= */ 0, Gtk::MESSAGE_ERROR);
 		e.set_secondary_text(err_str), e.run();
 		return EXIT_FAILURE;
 	}
-	ttyS_init(fd);
+	ttyS_init(fd, params.tty_conf);
 	
 	__gnu_cxx::stdio_filebuf<char> filebuf(fd, std::ios_base::in);
 	std::istream is(&filebuf);
 
-	UI(application, builder, is, Fenix3parser()).run();
+	UI(application, builder, is, *ParserFactory::create(params.parser_t))
+		.run();
 	close(fd);
 	return EXIT_SUCCESS;
 }
