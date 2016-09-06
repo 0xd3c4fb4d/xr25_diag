@@ -13,8 +13,6 @@
  * GNU General Public License for more details.
  */
 
-#include <iomanip>
-#include <sstream>
 #include "UI.hh"
 
 #define update_entry(_i, _c) __entry[_i]->set_text(std::to_string(_c))
@@ -92,11 +90,4 @@ void UI::update_page_diagnostic(XR25frame &fra) {
 void UI::update_page_dashboard(XR25frame &fra)  {
 	for (auto &i : __gauge)
 		i.update(&fra);
-
-	std::ostringstream oss;
-	oss << std::setw(4)
-	    << "MAP   (mbar) = " << fra.map      << std::endl
-	    << "Air temp (C) = " << fra.temp_air << std::endl
-	    << "Lambda  (mV) = " << fra.lambda_v;
-	__dash_tb->set_text(oss.str());
 }

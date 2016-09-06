@@ -97,7 +97,8 @@ private:
 	Gtk::Entry    *__entry[E_COUNT];
 	Gtk::Arrow    *__flag[F_COUNT];
 
-	enum { G_RPM = 0, G_SPD_KM_H, G_TEMP_WATER, G_BATT_V, G_COUNT };
+	enum { G_RPM = 0, G_SPD_KM_H, G_TEMP_WATER, G_BATT_V, G_MAP, G_TEMP_AIR,
+	       G_LAMBDA_V, G_COUNT };
 	CairoGauge     __gauge[G_COUNT] = {
 		{ "RPM", [](void *p) { return static_cast<XR25frame*>(p)->rpm; }
 		  , 7000, 1000 },
@@ -106,13 +107,17 @@ private:
 		{ "Temp (C)", [](void *p) { return static_cast<XR25frame*>(p)
 					    ->temp_water; }, 120, 30 },
 		{ "Battery (V)", [](void *p) { return static_cast<XR25frame*>(p)
-					       ->batt_v; }, 18, 2 }
+					       ->batt_v; }, 18, 2 },
+		{ "MAP (mbar)", [](void *p) { return static_cast<XR25frame*>(p)
+					      ->map; }, 1020, 255 },
+		{ "Air Temp(C)", [](void *p) { return static_cast<XR25frame*>(p)
+					       ->temp_air; }, 90, 30 },
+		{ "Lambda (mV)", [](void *p) { return static_cast<XR25frame*>(p)
+					       ->lambda_v; }, 1530, 255},
 	};
-	Glib::RefPtr<Gtk::TextBuffer>    __dash_tb;
 
 	void update_page_diagnostic(XR25frame &);
 	void update_page_dashboard(XR25frame &);
-
 	/** Update current notebook page, see 'update_page_xxx()' member
 	 * functions; called UI_UPDATE_PAGE_HZ times per sec.
 	 */
@@ -171,15 +176,14 @@ public:
 	void run() {
 		Gtk::Grid *dash_grid = nullptr;
 		__builder->get_widget("mw_dash_grid", dash_grid);
-		dash_grid->attach(__gauge[G_RPM],        0, 0, 1, 1);
-		dash_grid->attach(__gauge[G_SPD_KM_H],   2, 0, 1, 1);
-		dash_grid->attach(__gauge[G_TEMP_WATER], 0, 1, 1, 1);
-		dash_grid->attach(__gauge[G_BATT_V],     2, 1, 1, 1);
+		dash_grid->attach(__gauge[G_RPM],        0, 0, 1, 2);
+		dash_grid->attach(__gauge[G_SPD_KM_H],   2, 0, 1, 2);
+		dash_grid->attach(__gauge[G_TEMP_WATER], 0, 2, 1, 2);
+		dash_grid->attach(__gauge[G_BATT_V],     2, 2, 1, 2);
+		dash_grid->attach(__gauge[G_MAP],        1, 0, 1, 1);
+		dash_grid->attach(__gauge[G_TEMP_AIR],   1, 1, 1, 1);
+		dash_grid->attach(__gauge[G_LAMBDA_V],   1, 2, 1, 1);
 		dash_grid->show_all();
-
-		Gtk::TextView *dash_text = nullptr;
-		__builder->get_widget("mw_dash_text", dash_text);
-		dash_text->set_buffer((__dash_tb = Gtk::TextBuffer::create()));
 
 		/* connect signals */
 		Glib::signal_timeout().connect(sigc::mem_fun(*this,
@@ -199,20 +203,12 @@ public:
 				});
 		Gtk::CheckButton *hud = nullptr;
 		__builder->get_widget("mw_hud", hud);
-		hud->signal_toggled().connect([hud,dash_text,this]() {
+		hud->signal_toggled().connect([hud,this]() {
 				auto m = hud->get_active()
 					? Cairo::Matrix{ 1, 0, 0, -1, 0, 0 }
 					: Cairo::identity_matrix();
 				for (auto &i : __gauge)
 					i.set_transform_matrix(m);
-				dash_text->get_pango_context()
-					->set_matrix(hud->get_active()
-						     ? Pango::Matrix{ 1,  0,
-								      0, -1,
-								      0,  0 }
-						     : Pango::Matrix{ 1, 0,
-								      0, 1,
-								      0, 0 });
 			});
 		
 		__xr25reader.start(const_cast<XR25frameparser &>(__fp));
