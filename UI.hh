@@ -101,19 +101,19 @@ private:
 	       G_LAMBDA_V, G_COUNT };
 	CairoGauge     __gauge[G_COUNT] = {
 		{ "RPM", [](void *p) { return static_cast<XR25frame*>(p)->rpm; }
-		  , 7000, 1000 },
+		  , 7000, 500, 2 },
 		{ "km/h", [](void *p) { return static_cast<XR25frame*>(p)
-					->spd_km_h; }, 240, 20 },
+					->spd_km_h; }, 240, 10, 2 },
 		{ "Temp (C)", [](void *p) { return static_cast<XR25frame*>(p)
-					    ->temp_water; }, 120, 30 },
+					    ->temp_water; }, 120, 30, 1 },
 		{ "Battery (V)", [](void *p) { return static_cast<XR25frame*>(p)
-					       ->batt_v; }, 18, 2 },
+					       ->batt_v; }, 18, 1, 2 },
 		{ "MAP (mbar)", [](void *p) { return static_cast<XR25frame*>(p)
-					      ->map; }, 1020, 255 },
+					      ->map; }, 1020, 255, 1 },
 		{ "Air Temp(C)", [](void *p) { return static_cast<XR25frame*>(p)
-					       ->temp_air; }, 90, 30 },
+					       ->temp_air; }, 90, 30, 1 },
 		{ "Lambda (mV)", [](void *p) { return static_cast<XR25frame*>(p)
-					       ->lambda_v; }, 1530, 255},
+					       ->lambda_v; }, 1530, 255, 1},
 	};
 
 	void update_page_diagnostic(XR25frame &);
