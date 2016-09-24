@@ -41,7 +41,7 @@ void UI::update_page_diagnostic(XR25frame &fra) {
 	update_flag(F_IN_AC_REQUEST,       fra.in_flags & IN_AC_REQUEST);
 	update_flag(F_IN_AC_COMPRES,       fra.in_flags & IN_AC_COMPRES);
 	update_flag(F_IN_THROTTLE_0,       fra.in_flags & IN_THROTTLE_0);
-	update_flag(F_IN_PARKED,           ~fra.in_flags & IN_NOT_PARKED);
+	update_flag(F_IN_PARKED,           fra.in_flags & IN_PARKED);
 	update_flag(F_IN_THROTTLE_1,       fra.in_flags & IN_THROTTLE_1);
 	update_flag(F_OUT_PUMP_ENABLE,     fra.out_flags & OUT_PUMP_ENABLE);
 	update_flag(F_OUT_IDLE_REGULATION, fra.out_flags & OUT_IDLE_REGULATION);
@@ -78,12 +78,12 @@ void UI::update_page_diagnostic(XR25frame &fra) {
 		    fra.fault_flags_2 & FAULT_EEPROM_CHECKSUM);
 	update_flag(F_FAULT_PROG_CHECKSUM,
 		    fra.fault_flags_2 & FAULT_PROG_CHECKSUM);
-	update_flag(F_FAULT_PUMP,          ~fra.fault_flags_4 & FAULT_NOT_PUMP);
+	update_flag(F_FAULT_PUMP,          fra.fault_flags_4 & FAULT_PUMP);
 	update_flag(F_FAULT_WASTEGATE,
-		    ~fra.fault_flags_4 & FAULT_NOT_WASTEGATE);
-	update_flag(F_FAULT_EGR,           ~fra.fault_flags_4 & FAULT_NOT_EGR);
+		    fra.fault_flags_4 & FAULT_WASTEGATE);
+	update_flag(F_FAULT_EGR,           fra.fault_flags_4 & FAULT_EGR);
 	update_flag(F_FAULT_IDLE_REG,
-		    ~fra.fault_flags_4 & FAULT_NOT_IDLE_REG);
+		    fra.fault_flags_4 & FAULT_IDLE_REG);
 	update_flag(F_FAULT_INJECTORS,     fra.fault_flags_3 & FAULT_INJECTORS);
 }
 

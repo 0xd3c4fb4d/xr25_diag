@@ -39,7 +39,7 @@ struct XR25frame {
 #define IN_AC_REQUEST 0x02
 #define IN_AC_COMPRES 0x04
 #define IN_THROTTLE_0 0x08
-#define IN_NOT_PARKED 0x10
+#define IN_PARKED 0x10
 #define IN_THROTTLE_1 0x20
 
 	unsigned char out_flags;    /* byte 3 */
@@ -78,10 +78,10 @@ struct XR25frame {
 #define FAULT_PROG_CHECKSUM   0x80
 	
 	unsigned char fault_flags_4; /* byte 17 */
-#define FAULT_NOT_PUMP     0x01
-#define FAULT_NOT_WASTEGATE 0x04
-#define FAULT_NOT_EGR      0x08
-#define FAULT_NOT_IDLE_REG 0x20
+#define FAULT_PUMP     0x01
+#define FAULT_WASTEGATE 0x04
+#define FAULT_EGR      0x08
+#define FAULT_IDLE_REG 0x20
 	
 	unsigned char fault_flags_3; /* byte 18 */
 #define FAULT_INJECTORS    0x10

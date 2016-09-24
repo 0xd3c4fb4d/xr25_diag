@@ -21,6 +21,7 @@
 #include <string>
 #include <functional>
 #include "XR25streamreader.hh"
+#include "Fenix3parser.hh"
 
 class ParserFactory {
 public:
