@@ -3,7 +3,7 @@ CXXFLAGS = -pipe -O2 -Wall -std=c++11 -DXR25DIAG_VERSION=\"${XR25DIAG_VERSION}\"
            ${shell pkg-config --cflags gtkmm-3.0}
 LDFLAGS = ${shell pkg-config --libs gtkmm-3.0} -pthread
 BIN = xr25_diag
-OBJS = XR25streamreader.o UI.o CairoGauge.o main.o
+OBJS = XR25streamreader.o UI.o CairoGauge.o CairoTSPlot.o main.o
 
 all: ${BIN}
 
