@@ -15,7 +15,6 @@
 
 #include <cstdlib>
 #include <cstring>
-#include <ext/stdio_filebuf.h>
 #include <regex>
 #include <gtkmm.h>
 #include <asm/termbits.h>
@@ -28,6 +27,7 @@
 #include "XR25streamreader.hh"
 #include "ParserFactory.hh"
 #include "UI.hh"
+#include "tee_stdio_filebuf.hh"
 
 struct ParamsStruct {
 	Glib::ustring dev_path;    /* tty device path */
@@ -35,6 +35,8 @@ struct ParamsStruct {
 	Glib::ustring tty_conf;    /* serial port configuration; string format:
 				    * <baud>,<character size><parity><stop bits>
 				    * e.g., 62500,8N1 */
+	Glib::ustring save_pathname;   /* pathname of a file to write received
+					* frames to */
 };
 
 /** Get port configuration from user.
@@ -46,15 +48,18 @@ bool get_port_conf(Glib::RefPtr<Gtk::Builder> b, ParamsStruct &params) {
 #define DEV_PATH "/dev/"
 	Gtk::Dialog *conf_dialog;
 	Gtk::ComboBoxText *dev_path, *parser_t;
-	Gtk::Entry        *tty_conf;
+	Gtk::Entry        *tty_conf, *save_pathname;
+	Gtk::Button       *save_as;
 	b->get_widget("conf_dialog", conf_dialog);
 	b->get_widget("cd_dev_path", dev_path);
 	b->get_widget("cd_parser_t", parser_t);
 	b->get_widget("cd_tty_conf", tty_conf);
+	b->get_widget("cd_save_pathname", save_pathname);
+	b->get_widget("cd_save_as",       save_as);
 	
 	DIR *dirp = opendir(DEV_PATH);
 	struct dirent *dirent;
-	for (std::regex re("tty(S|ACM|USB)[0-9]+");
+	for (std::regex re("tty(S|ACM|USB)[0-9]+|stdin");
 	     (dirent = readdir(dirp)) || closedir(dirp); ) {
 		std::string d_name(dirent->d_name);
 		if (std::regex_match(d_name, re))
@@ -66,12 +71,22 @@ bool get_port_conf(Glib::RefPtr<Gtk::Builder> b, ParamsStruct &params) {
 		parser_t->append(i.first);
 	parser_t->set_active(0);
 
+	save_as->signal_clicked().connect([conf_dialog,save_pathname,&params](){
+			Gtk::FileChooserDialog _d(*conf_dialog, "Write file:",
+						 Gtk::FILE_CHOOSER_ACTION_SAVE);
+			_d.add_button("Cancel", Gtk::RESPONSE_CANCEL);
+			_d.add_button("OK", Gtk::RESPONSE_OK);
+			_d.set_do_overwrite_confirmation();
+			if (_d.run() == Gtk::RESPONSE_OK)
+				save_pathname->set_text(_d.get_filename());
+		});
 	int ret = conf_dialog->run();
 	conf_dialog->hide();
 
 	return ({ params.dev_path = dev_path->get_active_text();
 		params.parser_t = parser_t->get_active_text();
-		params.tty_conf = tty_conf->get_text(); })
+		params.tty_conf = tty_conf->get_text();
+		params.save_pathname = save_pathname->get_text(); })
 		, ret == Gtk::RESPONSE_OK;
 }
 
@@ -95,7 +110,8 @@ int main(int argc, char *argv[]) {
 	Glib::RefPtr<Gtk::Builder> builder = Gtk::Builder::create_from_file
 		("xr25_diag.glade");
 	ParamsStruct params;
-
+	std::filebuf ob;
+	
 	if (!get_port_conf(builder, params))
 		return EXIT_SUCCESS;
 
@@ -109,12 +125,15 @@ int main(int argc, char *argv[]) {
 		return EXIT_FAILURE;
 	}
 	ttyS_init(fd, params.tty_conf);
-	
-	__gnu_cxx::stdio_filebuf<char> filebuf(fd, std::ios_base::in);
-	std::istream is(&filebuf);
+
+	if (!params.save_pathname.empty())
+		ob.open(params.save_pathname, std::ios_base::out);
+	std::unique_ptr<__gnu_cxx::stdio_filebuf<char> > filebuf(ob.is_open()
+		   ? new tee_stdio_filebuf<char>(fd, std::ios_base::in, ob)
+		   : new __gnu_cxx::stdio_filebuf<char>(fd, std::ios_base::in));
+	std::istream is(filebuf.get());
 
 	UI(application, builder, is, *ParserFactory::create(params.parser_t))
 		.run();
-	close(fd);
 	return EXIT_SUCCESS;
 }
