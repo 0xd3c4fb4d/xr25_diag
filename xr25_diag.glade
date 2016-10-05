@@ -1651,27 +1651,22 @@ Author: Javier L. Gómez
           </packing>
         </child>
         <child>
-          <object class="GtkGrid" id="mw_dash_grid">
+          <object class="GtkGrid" id="mw_plot_grid">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="margin_left">18</property>
             <property name="margin_right">18</property>
             <property name="margin_top">18</property>
             <property name="margin_bottom">18</property>
+            <property name="row_spacing">18</property>
+            <property name="column_spacing">18</property>
             <property name="row_homogeneous">True</property>
             <property name="column_homogeneous">True</property>
             <child>
-              <object class="GtkCheckButton" id="mw_hud">
-                <property name="label" translatable="yes">HUD mode (dark theme recommended)</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">False</property>
-                <property name="draw_indicator">True</property>
-              </object>
-              <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">3</property>
-              </packing>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
             </child>
             <child>
               <placeholder/>
@@ -1703,10 +1698,63 @@ Author: Javier L. Gómez
           <object class="GtkLabel">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="label" translatable="yes">Dashboard</property>
+            <property name="label" translatable="yes">Plots</property>
           </object>
           <packing>
             <property name="position">1</property>
+            <property name="tab_fill">False</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkGrid" id="mw_dash_grid">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="margin_left">18</property>
+            <property name="margin_right">18</property>
+            <property name="margin_top">18</property>
+            <property name="margin_bottom">18</property>
+            <property name="row_homogeneous">True</property>
+            <property name="column_homogeneous">True</property>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+          </object>
+          <packing>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child type="tab">
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="label" translatable="yes">Dashboard</property>
+          </object>
+          <packing>
+            <property name="position">2</property>
             <property name="tab_fill">False</property>
           </packing>
         </child>
@@ -1726,6 +1774,18 @@ Author: Javier L. Gómez
             <property name="receives_default">True</property>
             <property name="use_stock">True</property>
           </object>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="mw_hud">
+            <property name="label" translatable="yes">HUD mode</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">False</property>
+            <property name="draw_indicator">True</property>
+          </object>
+          <packing>
+            <property name="position">2</property>
+          </packing>
         </child>
         <child>
           <object class="GtkGrid">

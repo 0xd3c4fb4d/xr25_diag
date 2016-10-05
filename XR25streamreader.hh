@@ -46,6 +46,7 @@ struct XR25frame {
 #define OUT_PUMP_ENABLE     0x01
 #define OUT_IDLE_REGULATION 0x02
 #define OUT_WASTEGATE_REG   0x04
+#define OUT_LAMBDA_LOOP     0x08
 #define OUT_EGR_ENABLE      0x20
 #define OUT_CHECK_ENGINE    0x80
 	

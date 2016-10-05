@@ -60,7 +60,8 @@ public:
 		  __tick_step(step), __label_step(l_step),
 		  __transform_matrix(Cairo::identity_matrix()) { }
 	CairoGauge(const CairoGauge &_o) : CairoGauge(_o.__text, _o.__sample_fn,
-						_o.__value_max, _o.__tick_step)
+						_o.__value_max, _o.__tick_step,
+						_o.__label_step)
 	{ }
 	virtual ~CairoGauge() { }
 
