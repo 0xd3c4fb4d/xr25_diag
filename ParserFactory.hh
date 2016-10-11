@@ -22,6 +22,7 @@
 #include <functional>
 #include "XR25streamreader.hh"
 #include "Fenix3parser.hh"
+#include "Fenix52Bparser.hh"
 
 class ParserFactory {
 public:
@@ -44,6 +45,7 @@ public:
  */
 const ParserFactory::ctor_map_t ParserFactory::__map = {
 	REGISTER_TYPE(Fenix3parser),
+	REGISTER_TYPE(Fenix52Bparser),
 };
 
 #endif /* PARSERFACTORY_HH */
