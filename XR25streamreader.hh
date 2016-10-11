@@ -120,7 +120,7 @@ private:
 
 	std::istream     &__in;
 	std::atomic_bool __synchronized;
-	std::atomic_int  __sync_err_count, __fra_sec;
+	std::atomic_int  __sync_err_count, __fra_sec, __fra_count;
 	post_parse_t     __post_parse;
 	std::thread      *__thrd;
 	
@@ -130,13 +130,14 @@ private:
 public:
 	XR25streamreader(std::istream &s, post_parse_t p = nullptr)
 		: __in(s), __synchronized(0),
-		  __sync_err_count(0), __fra_sec(0), __post_parse(p),
-		  __thrd(nullptr) {}
+		  __sync_err_count(0), __fra_sec(0), __fra_count(0),
+		  __post_parse(p), __thrd(nullptr) {}
 	~XR25streamreader() { stop(); }
 
 	bool is_synchronized() { return __synchronized.load(); }
 	int  get_sync_err_count() { return __sync_err_count.load(); }
 	int  get_fra_per_sec() { return __fra_sec.load(); }
+	int  get_fra_count() { return __fra_count.load(); }
 	
 	/** Read frames non-blocking; call stop() to cancel thread
 	 * @param parser The XR25frameparser to use

@@ -30,6 +30,7 @@ Author: Javier L. Gómez
   <!-- interface-authors Javier L. G\303\263mez -->
   <object class="GtkDialog" id="conf_dialog">
     <property name="can_focus">False</property>
+    <property name="resizable">False</property>
     <property name="type_hint">dialog</property>
     <child internal-child="vbox">
       <object class="GtkBox">
@@ -45,6 +46,7 @@ Author: Javier L. Gómez
                 <property name="label">gtk-ok</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
+                <property name="has_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
               </object>
@@ -1032,6 +1034,34 @@ Author: Javier L. Gómez
                             <property name="top_attach">4</property>
                           </packing>
                         </child>
+                        <child>
+                          <object class="GtkArrow" id="mw_f33">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                          </object>
+                          <packing>
+                            <property name="left_attach">2</property>
+                            <property name="top_attach">5</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="halign">start</property>
+                            <property name="label" translatable="yes">Lambda closed loop</property>
+                          </object>
+                          <packing>
+                            <property name="left_attach">3</property>
+                            <property name="top_attach">5</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <placeholder/>
+                        </child>
+                        <child>
+                          <placeholder/>
+                        </child>
                       </object>
                     </child>
                   </object>
@@ -1761,7 +1791,7 @@ Author: Javier L. Gómez
       </object>
     </child>
     <child type="titlebar">
-      <object class="GtkHeaderBar">
+      <object class="GtkHeaderBar" id="mw_hb">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="title">XR25_diag</property>

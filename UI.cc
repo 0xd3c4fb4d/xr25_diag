@@ -48,6 +48,7 @@ void UI::update_page_diagnostic(XR25frame &fra) {
 	update_flag(F_OUT_WASTEGATE_REG,   fra.out_flags & OUT_WASTEGATE_REG);
 	update_flag(F_OUT_EGR_ENABLE,      fra.out_flags & OUT_EGR_ENABLE);
 	update_flag(F_OUT_CHECK_ENGINE,    fra.out_flags & OUT_CHECK_ENGINE);
+	update_flag(F_OUT_LAMBDA_LOOP,     fra.out_flags & OUT_LAMBDA_LOOP);
 	update_flag(F_FAULT_MAP,           fra.fault_flags_1 & FAULT_MAP);
 	update_flag(F_FAULT_SPD_SENSOR,
 		    fra.fault_flags_1 & FAULT_SPD_SENSOR);
