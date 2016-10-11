@@ -5,6 +5,10 @@ LDFLAGS = ${shell pkg-config --libs gtkmm-3.0} -pthread
 BIN = xr25_diag
 OBJS = XR25streamreader.o UI.o CairoGauge.o CairoTSPlot.o main.o
 
+ifdef DEBUG
+  CXXFLAGS += -DDEBUG
+endif
+
 all: ${BIN}
 
 clean:

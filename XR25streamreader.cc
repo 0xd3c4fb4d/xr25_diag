@@ -17,6 +17,7 @@
 #include <condition_variable>
 #include <tuple>
 #include <mutex>
+#include <iomanip>
 
 /** Frame received handler.
  * @param parser The XR25frameparser to use
@@ -29,6 +30,14 @@ void XR25streamreader::frame_recv(XR25frameparser &parser,
 				  const unsigned char c[], int length,
 				  XR25frame &fra) {
 	this->__fra_count++;
+#ifdef DEBUG
+	std::cout << "[" << std::dec << length << "] " << std::hex
+		  << std::setfill('0');
+	for (int i = 0; i < length; ++i)
+		std::cout << " " << std::setw(2) << static_cast<int>(c[i]);
+	std::cout << std::endl;
+#endif
+
 	parser.parse_frame(c, length, fra);
 	if (__post_parse)
 		__post_parse(c, length, fra);
